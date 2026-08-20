@@ -1,0 +1,1088 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Mooda API",
+        "description": "REST API Mooda untuk aplikasi mobile (Flutter). Semua endpoint terproteksi memakai Bearer token (Sanctum).",
+        "contact": {
+            "name": "Mooda Teknologi Indonesia",
+            "email": "dev@mooda.id"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.mooda.id/api/v1",
+            "description": "Produksi"
+        },
+        {
+            "url": "http://127.0.0.1:8080/api/v1",
+            "description": "Lokal (dev)"
+        }
+    ],
+    "paths": {
+        "/account/tenant": {
+            "get": {
+                "tags": [
+                    "Akun"
+                ],
+                "summary": "Info tenant (bisnis) pengguna",
+                "operationId": "53aa4455e1afa9a350fab726cb735b0b",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/account/plan": {
+            "get": {
+                "tags": [
+                    "Akun"
+                ],
+                "summary": "Langganan & saldo deposit",
+                "operationId": "828d29a9f9973dd90bd871461895c654",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login & terbitkan Bearer token",
+                "operationId": "99d66635c4992aeaa6aa44ff653d0563",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "owner@mooda.test"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "mooda-mobile"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "3|abcd..."
+                                                },
+                                                "user": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Kredensial tidak valid"
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Profil pengguna saat ini",
+                "operationId": "7edae2cdbaafc10dff8c9c4198b320a2",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Belum login"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout (hapus token saat ini)",
+                "operationId": "6abf3b64a4bc7838d56346f05a5153af",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil logout"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/event/events": {
+            "get": {
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Daftar event",
+                "operationId": "b0ac3a7f3f4ec39a3d86407e4b4569a6",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/inventory/ingredients": {
+            "get": {
+                "tags": [
+                    "F&B - Inventory"
+                ],
+                "summary": "Daftar bahan + stok tersisa + status minimum",
+                "operationId": "4ae94d5ad277bee55084638bc705fdf6",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/inventory/movements": {
+            "post": {
+                "tags": [
+                    "F&B - Inventory"
+                ],
+                "summary": "Catat stok masuk/keluar (keluar termasuk waste)",
+                "operationId": "2e487e3494fc6a74e3177113b1c7b3cd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ingredient_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "in",
+                                        "enum": [
+                                            "in",
+                                            "out"
+                                        ]
+                                    },
+                                    "qty": {
+                                        "type": "number",
+                                        "example": 10
+                                    },
+                                    "buy_price": {
+                                        "description": "wajib utk type=in (harga/lot batch)",
+                                        "type": "integer",
+                                        "example": 13000,
+                                        "nullable": true
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "pembelian / waste / rusak",
+                                        "nullable": true
+                                    },
+                                    "expiry_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tercatat"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/inventory/opname": {
+            "post": {
+                "tags": [
+                    "F&B - Inventory"
+                ],
+                "summary": "Stok opname (sesuaikan stok fisik)",
+                "operationId": "9b1b3aa48f5959d3b7058f7b4b3f1e69",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "ingredient_id": {
+                                                    "type": "integer"
+                                                },
+                                                "counted_qty": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/kitchen/orders": {
+            "get": {
+                "tags": [
+                    "F&B - Dapur"
+                ],
+                "summary": "Antrean dapur (item yang perlu dimasak)",
+                "operationId": "c84b8ace97644eea2654aea3492d562c",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/kitchen/items/{id}/bump": {
+            "post": {
+                "tags": [
+                    "F&B - Dapur"
+                ],
+                "summary": "Tandai item matang / naik tahap (memicu potong stok FEFO)",
+                "operationId": "4cab2307661b4ecb73bb2cef9a1be490",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/menus": {
+            "get": {
+                "tags": [
+                    "F&B - Menu"
+                ],
+                "summary": "Daftar menu (dengan kategori & harga)",
+                "operationId": "5c7b747a790ca95a3337780324d116f9",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/menus/{id}": {
+            "get": {
+                "tags": [
+                    "F&B - Menu"
+                ],
+                "summary": "Detail menu + add-on",
+                "operationId": "9235a3861df86cf2d2971d4f7a396fae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/orders": {
+            "get": {
+                "tags": [
+                    "F&B - Kasir"
+                ],
+                "summary": "Daftar pesanan (filter status/tanggal)",
+                "operationId": "e6c3ea221955a1fa2c9dcebe425c1887",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "open",
+                                "paid",
+                                "void"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "F&B - Kasir"
+                ],
+                "summary": "Buat pesanan baru",
+                "operationId": "1d8f22274b9d9bf0c21e90df904c2e85",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "table_id": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "nullable": true
+                                    },
+                                    "order_type": {
+                                        "type": "string",
+                                        "example": "dine_in",
+                                        "enum": [
+                                            "dine_in",
+                                            "take_away"
+                                        ]
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "menu_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "qty": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "notes": {
+                                                    "type": "string",
+                                                    "example": "pedas"
+                                                },
+                                                "addon_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dibuat"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/orders/{id}": {
+            "get": {
+                "tags": [
+                    "F&B - Kasir"
+                ],
+                "summary": "Detail pesanan (+ item & struk)",
+                "operationId": "e0fde90fcc2d186a65505df2509eeb75",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/orders/{id}/pay": {
+            "post": {
+                "tags": [
+                    "F&B - Kasir"
+                ],
+                "summary": "Bayar pesanan (cash/QRIS)",
+                "operationId": "e742561ec2541ae8cb0f047cde6daa62",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "method": {
+                                        "type": "string",
+                                        "example": "cash",
+                                        "enum": [
+                                            "cash",
+                                            "qris"
+                                        ]
+                                    },
+                                    "paid": {
+                                        "type": "integer",
+                                        "example": 60000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Terbayar"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/recipes/{menuId}": {
+            "get": {
+                "tags": [
+                    "F&B - Resep & HPP"
+                ],
+                "summary": "Resep sebuah menu + HPP saat ini",
+                "operationId": "e6c767f956e04a952aa16f89e4935a5b",
+                "parameters": [
+                    {
+                        "name": "menuId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/reports/sales": {
+            "get": {
+                "tags": [
+                    "F&B - Laporan"
+                ],
+                "summary": "Ringkasan penjualan (per periode)",
+                "operationId": "c9f1417614cfef4696cb7936f6c7afb3",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/reports/hpp": {
+            "get": {
+                "tags": [
+                    "F&B - Laporan"
+                ],
+                "summary": "Dashboard HPP (food cost & margin)",
+                "operationId": "c0d07a29865d5da23c165c3627404d7b",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/fnb/tables": {
+            "get": {
+                "tags": [
+                    "F&B - Meja"
+                ],
+                "summary": "Daftar meja + status (kosong/terisi)",
+                "operationId": "743627cba9f60cbfcb2d9db603b8efba",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/laundry/orders": {
+            "get": {
+                "tags": [
+                    "Laundry - Kasir"
+                ],
+                "summary": "Daftar nota laundry",
+                "operationId": "724cff170d5d4f6694072052da51c179",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Laundry - Kasir"
+                ],
+                "summary": "Buat nota laundry (harga server-side, VIP diskon)",
+                "operationId": "2695e9a1133173c3f372e8632b523981",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "customer_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "delivery": {
+                                        "type": "string",
+                                        "example": "pickup",
+                                        "enum": [
+                                            "pickup",
+                                            "antar"
+                                        ]
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "service_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "qty": {
+                                                    "description": "kg/pcs/pasang sesuai satuan layanan",
+                                                    "type": "number",
+                                                    "example": 3.5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dibuat"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/laundry/orders/{id}/advance": {
+            "post": {
+                "tags": [
+                    "Laundry - Produksi"
+                ],
+                "summary": "Naikkan status ke tahap berikutnya",
+                "operationId": "24ae8ff9d23df1e956c8a0256ab64c82",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/laundry/services": {
+            "get": {
+                "tags": [
+                    "Laundry - Layanan"
+                ],
+                "summary": "Daftar layanan laundry + tarif/satuan",
+                "operationId": "8aa1b30682cff902dbc2c0deff3e85c7",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/laundry/customers": {
+            "get": {
+                "tags": [
+                    "Laundry - Layanan"
+                ],
+                "summary": "Daftar pelanggan laundry",
+                "operationId": "868b5c4dacfbd2b1858d580b2bd1849a",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "Umum"
+                ],
+                "summary": "Health check",
+                "operationId": "280679060081ff030b759bfc10c5ebb2",
+                "responses": {
+                    "200": {
+                        "description": "Service sehat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "service": {
+                                            "type": "string",
+                                            "example": "mooda-be"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/config": {
+            "get": {
+                "tags": [
+                    "Umum"
+                ],
+                "summary": "Konfigurasi publik untuk klien mobile",
+                "operationId": "f5d18d5372df0360878b28c15f81cc8b",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/shifts/current": {
+            "get": {
+                "tags": [
+                    "Shift"
+                ],
+                "summary": "Shift aktif saat ini",
+                "operationId": "bceb74d065e33de9e8cec12e0b8fd4ab",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Belum buka shift"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/shifts/open": {
+            "post": {
+                "tags": [
+                    "Shift"
+                ],
+                "summary": "Buka shift",
+                "operationId": "64d837fed3275680b0ab21def8a26416",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "opening_cash": {
+                                        "type": "integer",
+                                        "example": 200000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dibuka"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/shifts/close": {
+            "post": {
+                "tags": [
+                    "Shift"
+                ],
+                "summary": "Tutup shift (rekap kas)",
+                "operationId": "17f6881ab54a3a939d548fb1351e419b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "closing_cash": {
+                                        "type": "integer",
+                                        "example": 950000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ditutup"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "Sanctum",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Autentikasi & sesi (login/logout/me)"
+        },
+        {
+            "name": "Umum",
+            "description": "Health check & konfigurasi aplikasi"
+        },
+        {
+            "name": "Akun",
+            "description": "Profil, tenant, langganan/plan"
+        },
+        {
+            "name": "F&B - Kasir",
+            "description": "Pesanan, pembayaran, struk"
+        },
+        {
+            "name": "F&B - Dapur",
+            "description": "Kitchen Display System (antrean & bump)"
+        },
+        {
+            "name": "F&B - Menu",
+            "description": "Menu, kategori, add-on"
+        },
+        {
+            "name": "F&B - Meja",
+            "description": "Meja & sesi meja"
+        },
+        {
+            "name": "F&B - Inventory",
+            "description": "Bahan, batch, stok masuk/keluar, opname"
+        },
+        {
+            "name": "F&B - Resep & HPP",
+            "description": "Resep menu & harga pokok penjualan"
+        },
+        {
+            "name": "F&B - Laporan",
+            "description": "Laporan penjualan, HPP, shift"
+        },
+        {
+            "name": "Shift",
+            "description": "Buka/tutup shift & kas"
+        },
+        {
+            "name": "Laundry - Kasir",
+            "description": "Nota laundry & pembayaran"
+        },
+        {
+            "name": "Laundry - Produksi",
+            "description": "Pipeline status (Diterima..Diambil)"
+        },
+        {
+            "name": "Laundry - Layanan",
+            "description": "Layanan & pelanggan laundry"
+        },
+        {
+            "name": "Event",
+            "description": "Manajemen event & tiket (roadmap)"
+        }
+    ]
+}
