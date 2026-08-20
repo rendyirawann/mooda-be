@@ -30,6 +30,9 @@
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "404": {
+                        "description": "Tenant tidak ditemukan"
                     }
                 },
                 "security": [
@@ -77,7 +80,7 @@
                                 "properties": {
                                     "email": {
                                         "type": "string",
-                                        "example": "owner@mooda.test"
+                                        "example": "owner@warung.test"
                                     },
                                     "password": {
                                         "type": "string",
@@ -96,28 +99,10 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Berhasil login",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "properties": {
-                                                "token": {
-                                                    "type": "string",
-                                                    "example": "3|abcd..."
-                                                },
-                                                "user": {
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Berhasil login"
+                    },
+                    "403": {
+                        "description": "Akun nonaktif / diblokir"
                     },
                     "422": {
                         "description": "Kredensial tidak valid"
@@ -130,7 +115,7 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Profil pengguna saat ini",
+                "summary": "Profil pengguna saat ini + tenant",
                 "operationId": "7edae2cdbaafc10dff8c9c4198b320a2",
                 "responses": {
                     "200": {
@@ -365,7 +350,7 @@
                 "tags": [
                     "F&B - Menu"
                 ],
-                "summary": "Daftar menu (dengan kategori & harga)",
+                "summary": "Daftar menu (dengan kategori & harga akhir)",
                 "operationId": "5c7b747a790ca95a3337780324d116f9",
                 "parameters": [
                     {
@@ -382,6 +367,14 @@
                         "required": false,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "available",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ],
@@ -402,7 +395,7 @@
                 "tags": [
                     "F&B - Menu"
                 ],
-                "summary": "Detail menu + add-on",
+                "summary": "Detail menu + add-on aktif",
                 "operationId": "9235a3861df86cf2d2971d4f7a396fae",
                 "parameters": [
                     {

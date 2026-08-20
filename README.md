@@ -10,11 +10,20 @@ diarahkan ke subdomain **`api.mooda.id`**.
 - **Tag** dipisah per modul/vertical (F&B, Laundry, Event, …) supaya rapi walau API banyak.
 
 ## Arsitektur data
-- **Dev**: SQLite mandiri + seeder akun demo (`owner@mooda.test` / `password`) untuk uji login.
-- **Produksi**: **berbagi database dengan `stakko-pos`** (satu PostgreSQL dipakai web + API).
-  Endpoint modul saat ini masih *stub* contoh (ditandai `meta.stub=true`) — tinggal
-  disambungkan ke tabel bersama (`menus`, `orders`, `ingredient_batches`, `laundry_*`, dst).
-  Lihat komentar `TODO` di tiap controller.
+**Berbagi database dengan `stakko-pos`** (satu PostgreSQL `stakko_pos` dipakai web + API).
+Dev lokal `.env` menunjuk `127.0.0.1:5433/stakko_pos`; produksi ke DB server yang sama.
+
+- **PK `users` = UUID**, `tenant_id`/`menus.id`/`tenants.id` = bigint.
+- Auth mobile pakai Sanctum → tabel `personal_access_tokens` dibuat dengan `tokenable_id`
+  bertipe **uuid** (menyesuaikan `users.id`).
+- **Tenant-scoping WAJIB**: setiap query difilter `->where('tenant_id', $user->tenant_id)`
+  secara eksplisit (mooda-be tidak memakai global-scope tenancy stakko).
+
+### Status wiring
+- ✅ **Nyata (baca DB bersama)**: `Auth` (login/me/logout), `Akun` (tenant/plan), `F&B - Menu`.
+- 🚧 **Masih stub** (`meta.stub=true`, ada `// TODO`): Kasir/Order, Dapur, Meja, Inventory,
+  Resep&HPP, Laporan, Shift, Laundry, Event — tinggal ikuti pola MenuController
+  (filter `tenant_id` + map model ke tabel `stakko_pos`).
 
 ## Setup
 ```bash

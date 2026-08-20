@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
@@ -20,21 +22,15 @@ class AuthController extends Controller
             content: new OA\JsonContent(
                 required: ['email', 'password'],
                 properties: [
-                    new OA\Property(property: 'email', type: 'string', example: 'owner@mooda.test'),
+                    new OA\Property(property: 'email', type: 'string', example: 'owner@warung.test'),
                     new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password'),
                     new OA\Property(property: 'device_name', type: 'string', example: 'mooda-mobile'),
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: 'Berhasil login', content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'data', properties: [
-                        new OA\Property(property: 'token', type: 'string', example: '3|abcd...'),
-                        new OA\Property(property: 'user', type: 'object'),
-                    ], type: 'object'),
-                ]
-            )),
+            new OA\Response(response: 200, description: 'Berhasil login'),
+            new OA\Response(response: 403, description: 'Akun nonaktif / diblokir'),
             new OA\Response(response: 422, description: 'Kredensial tidak valid'),
         ]
     )]
@@ -46,23 +42,26 @@ class AuthController extends Controller
             'device_name' => ['nullable', 'string', 'max:120'],
         ]);
 
-        if (! Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
+        $user = User::where('email', $data['email'])->first();
+
+        if (! $user || ! Hash::check($data['password'], (string) $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Email atau kata sandi salah.'],
             ]);
         }
 
-        $user = $request->user() ?? Auth::user();
+        if (! $user->canUseApp()) {
+            return response()->json([
+                'message' => 'Akun Anda nonaktif atau diblokir. Hubungi admin.',
+            ], 403);
+        }
+
         $token = $user->createToken($data['device_name'] ?? 'mooda-mobile')->plainTextToken;
 
         return response()->json([
             'data' => [
                 'token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
+                'user' => $this->userPayload($user),
             ],
         ]);
     }
@@ -70,7 +69,7 @@ class AuthController extends Controller
     #[OA\Get(
         path: '/auth/me',
         tags: ['Auth'],
-        summary: 'Profil pengguna saat ini',
+        summary: 'Profil pengguna saat ini + tenant',
         security: [['bearerAuth' => []]],
         responses: [
             new OA\Response(response: 200, description: 'OK'),
@@ -79,16 +78,7 @@ class AuthController extends Controller
     )]
     public function me(Request $request): JsonResponse
     {
-        $u = $request->user();
-
-        return response()->json([
-            'data' => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'email' => $u->email,
-                'email_verified_at' => $u->email_verified_at,
-            ],
-        ]);
+        return response()->json(['data' => $this->userPayload($request->user())]);
     }
 
     #[OA\Post(
@@ -103,5 +93,23 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Berhasil logout.']);
+    }
+
+    private function userPayload(User $user): array
+    {
+        $tenant = $user->tenant_id ? Tenant::find($user->tenant_id) : null;
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'email_verified_at' => $user->email_verified_at,
+            'tenant' => $tenant ? [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'vertical' => $tenant->vertical,
+                'plan' => $tenant->plan,
+            ] : null,
+        ];
     }
 }
